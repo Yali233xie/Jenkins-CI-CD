@@ -5,6 +5,7 @@ pipeline {
         DIRECTORY_PATH = '/path/to/your/code'
         TESTING_ENVIRONMENT = 'staging'
         PRODUCTION_ENVIRONMENT = 'YourName-Production'
+        RECIPIENTS = 'your-email@example.com'  // 你要发送邮件的收件人地址
     }
 
     stages {
@@ -44,6 +45,16 @@ pipeline {
     }
 
     post {
+        success {
+            emailext to: "${env.RECIPIENTS}",
+                     subject: "Jenkins Build Successful: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "Good news! The build for ${env.JOB_NAME} was successful.\n\nCheck it here: ${env.BUILD_URL}"
+        }
+        failure {
+            emailext to: "${env.RECIPIENTS}",
+                     subject: "Jenkins Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "Unfortunately, the build for ${env.JOB_NAME} failed.\n\nCheck it here: ${env.BUILD_URL}"
+        }
         always {
             echo "Pipeline execution complete."
         }
