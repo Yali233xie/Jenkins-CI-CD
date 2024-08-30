@@ -5,7 +5,7 @@ pipeline {
         DIRECTORY_PATH = '/path/to/your/code'
         TESTING_ENVIRONMENT = 'staging'
         PRODUCTION_ENVIRONMENT = 'YourName-Production'
-        RECIPIENTS = 'yali233xie@gmail.com'  // Add your email here
+        RECIPIENTS = 'henryxie666888@gmail.com'  // Add your email here
     }
 
     stages {
