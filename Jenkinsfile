@@ -5,65 +5,79 @@ pipeline {
         DIRECTORY_PATH = '/path/to/your/code'
         TESTING_ENVIRONMENT = 'staging'
         PRODUCTION_ENVIRONMENT = 'YourName-Production'
-        RECIPIENTS = 'henryxie666888@gmail.com'  // Add your email here
+        RECIPIENTS = 'henryxie666888@gmail.com'  // 你的邮箱地址
     }
 
     stages {
         stage('Build') {
             steps {
-                echo "Fetching the source code from the directory path specified by the environment variable: ${env.DIRECTORY_PATH}"
-                echo "Compile the code and generate any necessary artifacts"
+                echo "从指定目录路径获取源代码：${env.DIRECTORY_PATH}"
+                echo "编译代码并生成必要的构建产物"
             }
         }
         stage('Test') {
             steps {
-                echo "Running unit tests"
-                echo "Running integration tests"
+                echo "运行单元测试"
+                echo "运行集成测试"
+                // 假设生成了一个测试日志文件
+                sh 'echo "Test logs" > test.log'
             }
         }
         stage('Code Quality Check') {
             steps {
-                echo "Checking the quality of the code"
+                echo "检查代码质量"
             }
         }
         stage('Security Scan') {
             steps {
-                echo "Running security scans"
+                echo "运行安全扫描"
+                // 假设生成了一个安全扫描日志文件
+                sh 'echo "Security scan logs" > security_scan.log'
             }
         }
         stage('Deploy') {
             steps {
-                echo "Deploying the application to a testing environment specified by the environment variable: ${env.TESTING_ENVIRONMENT}"
+                echo "将应用程序部署到测试环境：${env.TESTING_ENVIRONMENT}"
             }
         }
         stage('Approval') {
             steps {
-                echo "Waiting for manual approval"
+                echo "等待手动批准"
                 sleep time: 10, unit: 'SECONDS'
             }
         }
         stage('Deploy to Production') {
             steps {
-                echo "Deploying the code to the production environment: ${env.PRODUCTION_ENVIRONMENT}"
+                echo "将代码部署到生产环境：${env.PRODUCTION_ENVIRONMENT}"
             }
         }
     }
 
     post {
-        success {
-            mail to: "${env.RECIPIENTS}",
-                subject: "Pipeline ${currentBuild.fullDisplayName} succeeded",
-                body: "Good news! The pipeline has succeeded. Logs are attached.",
-                attachmentsPattern: '**/*.log' // Modify this pattern based on the log file format
-        }
-        failure {
-            mail to: "${env.RECIPIENTS}",
-                subject: "Pipeline ${currentBuild.fullDisplayName} failed",
-                body: "Unfortunately, the pipeline has failed. Please check the Jenkins job for more details. Logs are attached.",
-                attachmentsPattern: '**/*.log' // Modify this pattern based on the log file format
-        }
         always {
-            echo "Pipeline execution complete."
+            // 归档日志文件
+            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
+        }
+
+        success {
+            // 在测试和安全扫描阶段后发送邮件通知
+            emailext(
+                to: "${env.RECIPIENTS}",
+                subject: "流水线 ${env.JOB_NAME} #${env.BUILD_NUMBER} 成功",
+                body: "好消息！流水线已成功完成。请查看附件中的日志文件。",
+                attachmentsPattern: '**/*.log',
+                attachLog: true
+            )
+        }
+
+        failure {
+            emailext(
+                to: "${env.RECIPIENTS}",
+                subject: "流水线 ${env.JOB_NAME} #${env.BUILD_NUMBER} 失败",
+                body: "很遗憾，流水线失败了。请查看附件中的日志文件以获取更多信息。",
+                attachmentsPattern: '**/*.log',
+                attachLog: true
+            )
         }
     }
 }
