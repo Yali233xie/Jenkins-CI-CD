@@ -26,6 +26,11 @@ pipeline {
                 echo "Checking the quality of the code"
             }
         }
+        stage('Security Scan') {
+            steps {
+                echo "Running security scans"
+            }
+        }
         stage('Deploy') {
             steps {
                 echo "Deploying the application to a testing environment specified by the environment variable: ${env.TESTING_ENVIRONMENT}"
@@ -48,12 +53,14 @@ pipeline {
         success {
             mail to: "${env.RECIPIENTS}",
                 subject: "Pipeline ${currentBuild.fullDisplayName} succeeded",
-                body: "Good news! The pipeline has succeeded."
+                body: "Good news! The pipeline has succeeded. Logs are attached.",
+                attachmentsPattern: '**/*.log' // Modify this pattern based on the log file format
         }
         failure {
             mail to: "${env.RECIPIENTS}",
                 subject: "Pipeline ${currentBuild.fullDisplayName} failed",
-                body: "Unfortunately, the pipeline has failed. Please check the Jenkins job for more details."
+                body: "Unfortunately, the pipeline has failed. Please check the Jenkins job for more details. Logs are attached.",
+                attachmentsPattern: '**/*.log' // Modify this pattern based on the log file format
         }
         always {
             echo "Pipeline execution complete."
